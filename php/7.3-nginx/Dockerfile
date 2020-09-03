@@ -23,6 +23,13 @@ COPY ssl.conf /etc/nginx/ssl.conf
 COPY sites /etc/nginx/sites
 COPY start.sh  /home/start.sh
 
+RUN sed -i 's/php-7.3/php-7.4/g' /etc/apk/repositories
+
+RUN rm -rf /var/cache/apk/* && \
+    rm -rf /tmp/*
+
+RUN apk update
+
 # Install nginx from dotdeb (already enabled on base image)
 RUN echo "--> Installing Nginx" && \
     apk add --update nginx openssl && \
