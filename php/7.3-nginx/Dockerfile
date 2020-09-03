@@ -23,8 +23,6 @@ COPY ssl.conf /etc/nginx/ssl.conf
 COPY sites /etc/nginx/sites
 COPY start.sh  /home/start.sh
 
-RUN sed -i 's/php-7.3/php-7.4/g' /etc/apk/repositories
-
 RUN rm -rf /var/cache/apk/* && \
     rm -rf /tmp/*
 
