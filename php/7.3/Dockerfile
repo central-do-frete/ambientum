@@ -9,11 +9,6 @@
 #
 FROM alpine:3.11
 
-#ADD https://dl.bintray.com/php-alpine/key/php-alpine.rsa.pub /etc/apk/keys/php-alpine.rsa.pub
-#
-#RUN apk --update-cache add ca-certificates && \
-#    echo "https://dl.bintray.com/php-alpine/v3.11/php-7.4" >> /etc/apk/repositories
-
 # Repository/Image Maintainer
 LABEL maintainer="Diego Hernandes <iamhernandev@gmail.com>"
 
@@ -161,6 +156,10 @@ RUN echo "---> Enabling PHP-Alpine" && \
     chmod +x /scripts/*.sh && \
     /scripts/update-cert.sh && \
     rm -rf /tmp/*
+
+# Fix work iconv library with alpine
+RUN apk add --upgrade gnu-libiconv
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
 # Define the running user
 USER ambientum
