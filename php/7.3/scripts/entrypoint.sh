@@ -1,10 +1,14 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ash
+
+# source profile always.
+
+source /etc/profile
 
 # fix home directory permissions.
 sudo chown -R ambientum:ambientum /home/ambientum
 
-# copy bash config into place.
-cp /home/bashrc /home/ambientum/.bashrc
+# run update-cert script.
+bash /scripts/update-cert.sh
 
 # Set PHP memory limit value.
 sudo sed -i "/memory_limit = .*/c\memory_limit = $PHP_MEMORY_LIMIT" /etc/php7/php.ini
@@ -46,7 +50,13 @@ if [[ $XDEBUG_ENABLED == true ]]; then
     # enable xdebug remote config
     echo "[xdebug]" | sudo tee -a /etc/php7/conf.d/00_xdebug.ini > /dev/null
     echo "xdebug.remote_enable=1" | sudo tee -a /etc/php7/conf.d/00_xdebug.ini > /dev/null
-    echo "xdebug.remote_host=`/sbin/ip route|awk '/default/ { print $3 }'`" | sudo tee -a /etc/php7/conf.d/00_xdebug.ini > /dev/null
+
+    if sudo ping -c 1 docker.for.mac.localhost > /dev/null; then
+        echo "xdebug.remote_host=docker.for.mac.localhost" | sudo tee -a /etc/php7/conf.d/00_xdebug.ini > /dev/null
+    else
+        echo "xdebug.remote_host=`/sbin/ip route|awk '/default/ { print $3 }'`" | sudo tee -a /etc/php7/conf.d/00_xdebug.ini > /dev/null
+    fi;
+
     echo "xdebug.remote_port=9000" | sudo tee -a /etc/php7/conf.d/00_xdebug.ini > /dev/null
     echo "xdebug.scream=0" | sudo tee -a /etc/php7/conf.d/00_xdebug.ini > /dev/null
     echo "xdebug.cli_color=1" | sudo tee -a /etc/php7/conf.d/00_xdebug.ini > /dev/null
