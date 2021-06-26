@@ -4,19 +4,22 @@
 # Repository:    PHP
 # Image:         CLI/Base
 # Version:       7.3.x
-# Strategy:      PHP From PHP-Alpine Repository (CODECASTS) (https://php-alpine.codecasts.rocks)
-# Base distro:   Alpine 3.9
+# Strategy:      PHP From PHP-Alpine Repository (CODECASTS) (https://github.com/codecasts/php-alpine)
+# Base distro:   Alpine 3.11
 #
-FROM alpine:3.9
+FROM alpine:3.11
 
 # Repository/Image Maintainer
 LABEL maintainer="Diego Hernandes <iamhernandev@gmail.com>"
 
 # Avoid cache use when PHP version changes
-ENV CURRENT_PHP_VERSION=7.3.11
+ENV CURRENT_PHP_VERSION=7.3.25
 
 # Variables for enabling NewRelic
-ENV FRAMEWORK=laravel \
+ENV ENV="/etc/profile" \
+    FRAMEWORK=laravel \
+    CAROOT=/home/ambientum/.mkcert \
+    SSL_DOMAIN="ambientum.localhost" \
     OPCACHE_MODE="normal" \
     PHP_MEMORY_LIMIT=256M \
     XDEBUG_ENABLED=false \
@@ -28,18 +31,16 @@ ENV FRAMEWORK=laravel \
     COMPOSER_PROCESS_TIMEOUT=1200
 
 # Add the ENTRYPOINT script
-ADD start.sh /scripts/start.sh
-ADD bashrc /home/ambientum/.bashrc
-ADD bashrc /home/bashrc
+COPY etc /etc
+COPY scripts /scripts
+
+# copy mkcert binary from mkcert image.
+COPY --from=ambientum/mkcert:1.4 /bin/mkcert /bin/mkcert
 
 # Install PHP From DotDeb, Common Extensions, Composer and then cleanup
 RUN echo "---> Enabling PHP-Alpine" && \
-    apk add --update wget && \
-    wget -O /etc/apk/keys/php-alpine.rsa.pub https://dl.bintray.com/php-alpine/key/php-alpine.rsa.pub && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.9/main" > /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.9/community" >> /etc/apk/repositories && \
-    echo "https://dl.bintray.com/php-alpine/v3.9/php-7.3" >> /etc/apk/repositories && \
     apk add --update \
+    wget \
     curl \
     openssh \
     bash \
@@ -56,48 +57,54 @@ RUN echo "---> Enabling PHP-Alpine" && \
     sudo && \
     echo "---> Preparing and Installing PHP" && \
     apk add --update \
-    php \
-    php-apcu \
-    php-bcmath \
-    php-bz2 \
-    php-calendar \
-    php-curl \
-    php-ctype \
-    php-exif \
-    php-fpm \
-    php-gd \
-    php-gmp \
-    php-iconv \
-    php-imagick \
-    php-imap \
-    php-intl \
-    php-json \
-    php-mbstring \
-    php-mysqli \
-    php-mysqlnd \
-    php-pdo_mysql \
-    php-memcached \
-    php-mongodb \
-    php-opcache \
-    php-pdo_pgsql \
-    php-pgsql \
-    php-posix \
-    php-redis \
-    php-soap \
-    php-sodium \
-    php-sqlite3 \
-    php-pdo_sqlite \
-    php-xdebug \
-    php-xml \
-    php-xmlreader \
-    php-openssl \
-    php-phar \
-    php-xsl \
-    php-zip \
-    php-zlib \
-    php-pcntl \
-    php-cgi \
-    php-phpdbg && \
+    php7@php \
+    php7-common@php \
+    php7-apcu@php \
+    php7-bcmath@php \
+    php7-bz2@php \
+    php7-calendar@php \
+    php7-curl@php \
+    php7-ctype@php \
+    php7-exif@php \
+    php7-fpm@php \
+    php7-gd@php \
+    php7-gmp@php \
+    php7-iconv@php \
+    php7-imagick@php \
+    php7-imap@php \
+    php7-intl@php \
+    php7-json@php \
+    php7-mbstring@php \
+    php7-mysqli@php \
+    php7-mysqlnd@php \
+    php7-pdo_mysql@php \
+    php7-memcached@php \
+    php7-mongodb@php \
+    php7-opcache@php \
+    php7-pdo_pgsql@php \
+    php7-pgsql@php \
+    php7-posix@php \
+    php7-redis@php \
+    php7-soap@php \
+    php7-sodium@php \
+    php7-sqlite3@php \
+    php7-pdo_sqlite@php \
+    php7-xdebug@php \
+    php7-xml@php \
+    php7-xmlreader@php \
+    php7-openssl@php \
+    php7-phar@php \
+    php7-xsl@php \
+    php7-zip@php \
+    php7-zlib@php \
+    php7-pcntl@php \
+    php7-gettext@php \
+    php7-cgi@php \
+    php7-zlib@php \
+    php7-pcov@php \
+    php7-ftp@php \
+    php7-phpdbg@php && \
+    echo "Set disable_coredump false" >> /etc/sudo.conf && \
     sudo ln -s /usr/bin/php7 /usr/bin/php && \
     sudo ln -s /usr/bin/php-cgi7 /usr/bin/php-cgi && \
     sudo ln -s /usr/sbin/php-fpm7 /usr/sbin/php-fpm && \
@@ -108,11 +115,14 @@ RUN echo "---> Enabling PHP-Alpine" && \
     echo "---> Adding the ambientum user" && \
     adduser -D -u 1000 ambientum && \
     mkdir -p /var/www/app && \
+    mkdir -p /home/ssl && \
     chown -R ambientum:ambientum /var/www && \
+    chown -R ambientum:ambientum /home/ssl && \
     wget -O /tini https://github.com/krallin/tini/releases/download/v0.18.0/tini-static && \
     chmod +x /tini && \
     echo "---> Configuring PHP" && \
     echo "ambientum  ALL = ( ALL ) NOPASSWD: ALL" >> /etc/sudoers && \
+    sed -i "/memory_limit = .*/c\memory_limit = $PHP_MEMORY_LIMIT" /etc/php7/php.ini && \
     sed -i "/user = .*/c\user = ambientum" /etc/php7/php-fpm.d/www.conf && \
     sed -i "/^group = .*/c\group = ambientum" /etc/php7/php-fpm.d/www.conf && \
     sed -i "/listen.owner = .*/c\listen.owner = ambientum" /etc/php7/php-fpm.d/www.conf && \
@@ -143,9 +153,13 @@ RUN echo "---> Enabling PHP-Alpine" && \
     chown -R ambientum:ambientum /var/log/newrelic && \
     chown -R ambientum:ambientum /home/ambientum && \
     chown -R ambientum:ambientum /scripts && \
-    chown -R ambientum:ambientum /home/bashrc && \
-    chmod +x /scripts/start.sh && \
+    chmod +x /scripts/*.sh && \
+    /scripts/update-cert.sh && \
     rm -rf /tmp/*
+
+# Fix work iconv library with alpine
+RUN apk add --upgrade gnu-libiconv
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
 # Define the running user
 USER ambientum
@@ -154,10 +168,10 @@ USER ambientum
 WORKDIR "/var/www/app"
 
 # Environment variables
-ENV PATH=/home/ambientum/.composer/vendor/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH=/scripts:/home/ambientum/.composer/vendor/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Define the entry point that tries to enable newrelic
-ENTRYPOINT ["/tini", "--", "/scripts/start.sh"]
+ENTRYPOINT ["/scripts/entrypoint.sh"]
 
 # As non daemon and single base image, it may be used as cli container
-CMD ["/bin/bash"]
+CMD ["/usr/bin/env", "ash"]

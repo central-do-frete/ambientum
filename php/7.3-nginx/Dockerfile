@@ -5,7 +5,7 @@
 # Image:         PHP-FPM + Nginx
 # Version:       7.3.x
 # Strategy:      PHP From PHP-Alpine Repository (CODECASTS) + Official Nginx
-# Base distro:   Alpine 3.9
+# Base distro:   Alpine 3.10
 #
 # Inspired by official PHP images.
 #
@@ -17,16 +17,9 @@ LABEL maintainer="Diego Hernandes <iamhernandev@gmail.com>"
 # Reset user to root to allow software install
 USER root
 
-# Copy nginx and entry script
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY ssl.conf /etc/nginx/ssl.conf
-COPY sites /etc/nginx/sites
+# copy config and start CMD.
+COPY etc /etc
 COPY start.sh  /home/start.sh
-
-RUN rm -rf /var/cache/apk/* && \
-    rm -rf /tmp/*
-
-RUN apk update
 
 # Install nginx from dotdeb (already enabled on base image)
 RUN echo "--> Installing Nginx" && \
@@ -35,8 +28,6 @@ RUN echo "--> Installing Nginx" && \
     echo "--> Fixing permissions" && \
     mkdir /var/tmp/nginx && \
     mkdir /var/run/nginx && \
-    mkdir /home/ssl && \
-    chown -R ambientum:ambientum /home/ssl && \
     chown -R ambientum:ambientum /var/tmp/nginx && \
     chown -R ambientum:ambientum /var/run/nginx && \
     chown -R ambientum:ambientum /var/log/nginx && \
@@ -47,13 +38,6 @@ RUN echo "--> Installing Nginx" && \
 
 # Define the running user
 USER ambientum
-
-# Pre generate some SSL
-# YOU SHOULD REPLACE WITH YOUR OWN CERT.
-RUN openssl req -x509 -nodes -days 3650 \
-   -newkey rsa:2048 -keyout /home/ssl/nginx.key \
-   -out /home/ssl/nginx.crt -subj "/C=AM/ST=Ambientum/L=Ambientum/O=Ambientum/CN=*.dev" && \
-   openssl dhparam -out /home/ssl/dhparam.pem 2048
 
 # Application directory
 WORKDIR "/var/www/app"
