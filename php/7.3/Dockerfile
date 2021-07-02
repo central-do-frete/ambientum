@@ -7,7 +7,7 @@
 # Strategy:      PHP From PHP-Alpine Repository (CODECASTS) (https://php-alpine.codecasts.rocks)
 # Base distro:   Alpine 3.9
 #
-FROM alpine:3.10
+FROM alpine:3.11
 
 # Repository/Image Maintainer
 LABEL maintainer="Diego Hernandes <iamhernandev@gmail.com>"
@@ -37,9 +37,9 @@ COPY etc /etc
 # Install PHP From DotDeb, Common Extensions, Composer and then cleanup
 RUN echo "---> Enabling PHP-Alpine" && \
     apk add --update wget && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.10/main" > /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.10/community" >> /etc/apk/repositories && \
-    echo "https://packages.whatwedo.ch/php-alpine/v3.10/php-7.3" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.11/main" > /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.11/community" >> /etc/apk/repositories && \
+    echo "@php https://packages.whatwedo.ch/php-alpine/v3.11/php-7.3" >> /etc/apk/repositories && \
     apk add --update \
     curl \
     openssh \
@@ -57,51 +57,53 @@ RUN echo "---> Enabling PHP-Alpine" && \
     sudo && \
     echo "---> Preparing and Installing PHP" && \
     apk add --update \
-    php \
-    php-apcu \
-    php-bcmath \
-    php-bz2 \
-    php-calendar \
-    php-curl \
-    php-ctype \
-    php-exif \
-    php-fpm \
-    php-gd \
-    php-gmp \
-    php-iconv \
-    php-imagick \
-    php-imap \
-    php-intl \
-    php-json \
-    php-mbstring \
-    php-mysqli \
-    php-mysqlnd \
-    php-pdo_mysql \
-    php-memcached \
-    php-mongodb \
-    php-opcache \
-    php-pdo_pgsql \
-    php-pgsql \
-    php-posix \
-    php-redis \
-    php-soap \
-    php-sodium \
-    php-sqlite3 \
-    php-pdo_sqlite \
-    php-xdebug \
-    php-xml \
-    php-xmlreader \
-    php-openssl \
-    php-phar \
-    php-xsl \
-    php-zip \
-    php-zlib \
-    php-pcntl \
-    php-cgi \
-    php-common \
-    zlib-dev \
-    libzip-dev \
-    php-phpdbg && \
+    php7@php \
+    php7-common@php \
+    php7-apcu@php \
+    php7-bcmath@php \
+    php7-bz2@php \
+    php7-calendar@php \
+    php7-curl@php \
+    php7-ctype@php \
+    php7-exif@php \
+    php7-fpm@php \
+    php7-gd@php \
+    php7-gmp@php \
+    php7-iconv@php \
+    php7-imagick@php \
+    php7-imap@php \
+    php7-intl@php \
+    php7-json@php \
+    php7-mbstring@php \
+    php7-mysqli@php \
+    php7-mysqlnd@php \
+    php7-pdo_mysql@php \
+    php7-memcached@php \
+    php7-mongodb@php \
+    php7-opcache@php \
+    php7-pdo_pgsql@php \
+    php7-pgsql@php \
+    php7-posix@php \
+    php7-redis@php \
+    php7-soap@php \
+    php7-sodium@php \
+    php7-sqlite3@php \
+    php7-pdo_sqlite@php \
+    php7-xdebug@php \
+    php7-xml@php \
+    php7-xmlreader@php \
+    php7-openssl@php \
+    php7-phar@php \
+    php7-xsl@php \
+    php7-zip@php \
+    php7-zlib@php \
+    php7-pcntl@php \
+    php7-gettext@php \
+    php7-cgi@php \
+    php7-zlib@php \
+    php7-pcov@php \
+    php7-ftp@php \
+    php7-phpdbg@php && \
     sudo ln -s /usr/bin/php7 /usr/bin/php && \
     sudo ln -s /usr/bin/php-cgi7 /usr/bin/php-cgi && \
     sudo ln -s /usr/sbin/php-fpm7 /usr/sbin/php-fpm && \

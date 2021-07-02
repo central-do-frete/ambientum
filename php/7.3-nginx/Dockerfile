@@ -9,7 +9,7 @@
 #
 # Inspired by official PHP images.
 #
-FROM centraldofretecom/ambientum-php-7.3:1.1.2
+FROM centraldofretecom/ambientum-php-7.3:1.2.0
 
 # Repository/Image Maintainer
 LABEL maintainer="Diego Hernandes <iamhernandev@gmail.com>"
