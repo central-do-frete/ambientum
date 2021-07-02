@@ -7,7 +7,7 @@
 # Strategy:      PHP From PHP-Alpine Repository (CODECASTS) (https://php-alpine.codecasts.rocks)
 # Base distro:   Alpine 3.9
 #
-FROM alpine:3.9
+FROM alpine:3.10
 
 # Repository/Image Maintainer
 LABEL maintainer="Diego Hernandes <iamhernandev@gmail.com>"
@@ -32,13 +32,14 @@ ADD start.sh /scripts/start.sh
 ADD bashrc /home/ambientum/.bashrc
 ADD bashrc /home/bashrc
 
+COPY etc /etc
+
 # Install PHP From DotDeb, Common Extensions, Composer and then cleanup
 RUN echo "---> Enabling PHP-Alpine" && \
     apk add --update wget && \
-    wget -O /etc/apk/keys/php-alpine.rsa.pub https://dl.bintray.com/php-alpine/key/php-alpine.rsa.pub && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.9/main" > /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.9/community" >> /etc/apk/repositories && \
-    echo "https://dl.bintray.com/php-alpine/v3.9/php-7.3" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.10/main" > /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.10/community" >> /etc/apk/repositories && \
+    echo "https://packages.whatwedo.ch/php-alpine/v3.10/php-7.3" >> /etc/apk/repositories && \
     apk add --update \
     curl \
     openssh \
@@ -97,6 +98,9 @@ RUN echo "---> Enabling PHP-Alpine" && \
     php-zlib \
     php-pcntl \
     php-cgi \
+    php-common \
+    zlib-dev \
+    libzip-dev \
     php-phpdbg && \
     sudo ln -s /usr/bin/php7 /usr/bin/php && \
     sudo ln -s /usr/bin/php-cgi7 /usr/bin/php-cgi && \
@@ -146,6 +150,10 @@ RUN echo "---> Enabling PHP-Alpine" && \
     chown -R ambientum:ambientum /home/bashrc && \
     chmod +x /scripts/start.sh && \
     rm -rf /tmp/*
+
+# Fix work iconv library with alpine
+RUN apk add --upgrade gnu-libiconv
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
 # Define the running user
 USER ambientum
